@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  find-keeper-bot:
+    image: registery.toadonload.ru/find-keeper:latest
+    container_name: find-keeper-bot
+    restart: unless-stopped
+    environment:
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_CHANNEL=${TELEGRAM_CHANNEL}
+    volumes:
+      - /tmp:/tmp
+    networks:
+      - bot-network
+
+networks:
+  bot-network:
+    driver: bridge
