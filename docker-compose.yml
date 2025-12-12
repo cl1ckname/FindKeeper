@@ -1,15 +1,14 @@
-version: '3.8'
-
+version: "3.8"
 services:
-  find-keeper-bot:
-    image: registery.toadonload.ru/find-keeper:latest
-    container_name: find-keeper-bot
+  telegram-bot:
+    build: .
+    container_name: telegram-bot
     restart: unless-stopped
     environment:
-      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
-      - TELEGRAM_CHANNEL=${TELEGRAM_CHANNEL}
-    volumes:
-      - /tmp:/tmp
+      - BOT_TOKEN=${BOT_TOKEN}
+      - ENVIRONMENT=production
+    # network_mode: host  # если нужен доступ к локальным сервисам
+    # или обычная сеть
     networks:
       - bot-network
 

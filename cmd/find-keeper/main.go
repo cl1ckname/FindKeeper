@@ -20,7 +20,7 @@ func main() {
 
 	token := os.Getenv("TELEGRAM_BOT_TOKEN")
 	if token == "" {
-		log.Fatal("TELEGRAM_BOT_TOKEN environment variable is required")
+		log.Fatal("BOT_TOKEN environment variable is required")
 	}
 
 	channel := os.Getenv("TELEGRAM_CHANNEL")
