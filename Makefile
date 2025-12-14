@@ -1,12 +1,12 @@
 .PHONY: build docker-build docker-push clean run
 
 BOT_NAME := find-keeper
-REGISTRY := <your registry>
+REGISTRY := registery.toadonload.ru
 IMAGE_NAME := $(REGISTRY)/$(BOT_NAME)
 TAG := latest
 
 build:
-	go build -o bin/$(BOT_NAME) ./cmd/find-keeper
+	go build -o bin/app ./cmd/find-keeper
 
 docker-build:
 	docker build -t $(IMAGE_NAME):$(TAG) .

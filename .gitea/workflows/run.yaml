@@ -1,20 +1,22 @@
-name: Deploy Telegram Bot
+name: Deploy Go App
 on: [push]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout manually
-        shell: sh
-        run: |
-          # Клонируем репу напрямую
-          git clone https://gitea.toadonload.ru/${{ github.repository }} .
-          cd ${{ github.event.repository.name }}
-      - name: Deploy with Docker Compose
-        env:
-          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-          TELEGRAM_CHANNEL: ${{ secrets.TELEGRAM_CHENNEL }}
-        run: |
-          docker-compose down
-          docker-compose up -d --build
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+
+      # - name: Install Docker
+      #   run: curl -fsSL https://get.docker.com | sh
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build app
+        run: make docker-build
+      - name: Push
+        run: make docker-push

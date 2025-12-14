@@ -10,30 +10,36 @@ Telegram bot for forwarding media from forwarded posts to a channel.
 ## Build and Run
 
 ### Local Build
+
 ```bash
 make build
 make run
 ```
 
 ### Docker
+
 ```bash
 make docker-build
 make docker-push
 ```
 
-### Docker Compose (for Portainer)
+### Docker Compose
+
 1. Create `.env` file with your variables:
+
 ```
 TELEGRAM_BOT_TOKEN=your_bot_token_here
 TELEGRAM_CHANNEL=-1001234567890
 ```
 
 2. Run with docker-compose:
+
 ```bash
 docker-compose up -d
 ```
 
 ### Install Dependencies
+
 ```bash
 make install-deps
 ```
@@ -48,6 +54,7 @@ make install-deps
 ## Getting Channel ID
 
 To get the channel ID:
+
 1. Add @userinfobot to your channel
 2. Forward any message from the channel to the bot
 3. Copy the channel ID (starts with -100)
