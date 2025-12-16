@@ -10,9 +10,6 @@ jobs:
         with:
           go-version: "1.23"
 
-      # - name: Install Docker
-      #   run: curl -fsSL https://get.docker.com | sh
-
       - name: Checkout
         uses: actions/checkout@v4
 
