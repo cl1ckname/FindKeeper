@@ -1,0 +1,2 @@
+FROM linuxserver/wireguard
+COPY wg0.conf /config/wg0.conf

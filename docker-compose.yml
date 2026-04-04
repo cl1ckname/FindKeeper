@@ -1,17 +1,19 @@
-version: "3.8"
 services:
-  telegram-bot:
-    build: .
-    container_name: telegram-bot
+  wireguard:
+    image: registery.toadonload.ru/find-keeper-wg:latest
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
+      - net.ipv6.conf.all.disable_ipv6=0
     restart: unless-stopped
-    environment:
-      - BOT_TOKEN=${BOT_TOKEN}
-      - ENVIRONMENT=production
-    # network_mode: host  # если нужен доступ к локальным сервисам
-    # или обычная сеть
-    networks:
-      - bot-network
 
-networks:
-  bot-network:
-    driver: bridge
+  bot:
+    image: registery.toadonload.ru/find-keeper:latest
+    network_mode: service:wireguard
+    depends_on:
+      - wireguard
+    env_file:
+      - .env
+    restart: unless-stopped

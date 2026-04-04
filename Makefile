@@ -9,10 +9,12 @@ build:
 	go build -o bin/app ./cmd/find-keeper
 
 docker-build:
-	docker build -t $(IMAGE_NAME):$(TAG) .
+	docker build --network=host -t $(IMAGE_NAME):$(TAG) .
+	docker build -t $(IMAGE_NAME)-wg:$(TAG) -f Dockerfile.wireguard .
 
 docker-push: docker-build
 	docker push $(IMAGE_NAME):$(TAG)
+	docker push $(IMAGE_NAME)-wg:$(TAG)
 
 clean:
 	rm -f $(BOT_NAME)
