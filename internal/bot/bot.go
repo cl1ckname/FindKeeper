@@ -5,11 +5,13 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"golang.org/x/net/proxy"
 )
 
 type Bot struct {
@@ -20,8 +22,32 @@ type Bot struct {
 
 type closeChan = chan struct{}
 
-func NewBot(token, channel string) (*Bot, error) {
-	bot, err := tgbotapi.NewBotAPI(token)
+func NewBot(token, channel, proxyURL string) (*Bot, error) {
+	var httpClient *http.Client
+	if proxyURL != "" {
+		u, err := url.Parse(proxyURL)
+		if err != nil {
+			return nil, fmt.Errorf("invalid proxy URL: %v", err)
+		}
+		var auth *proxy.Auth
+		if u.User != nil {
+			auth = &proxy.Auth{User: u.User.Username()}
+			if pass, ok := u.User.Password(); ok {
+				auth.Password = pass
+			}
+		}
+		dialer, err := proxy.SOCKS5("tcp", u.Host, auth, proxy.Direct)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create proxy dialer: %v", err)
+		}
+		httpClient = &http.Client{
+			Transport: &http.Transport{Dial: dialer.Dial},
+		}
+	} else {
+		httpClient = &http.Client{}
+	}
+
+	bot, err := tgbotapi.NewBotAPIWithClient(token, tgbotapi.APIEndpoint, httpClient)
 	if err != nil {
 		return nil, err
 	}
@@ -92,6 +118,7 @@ func (b *Bot) handlePhoto(message *tgbotapi.Message) {
 
 	photoMsg := tgbotapi.NewPhoto(b.channel, tgbotapi.FilePath(tempFile))
 
+	photoMsg.Caption = message.Text
 	_, err = b.api.Send(photoMsg)
 	if err != nil {
 		log.Printf("Error sending photo: %v", err)

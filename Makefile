@@ -19,7 +19,7 @@ clean:
 	docker rmi $(IMAGE_NAME):$(TAG) 2>/dev/null || true
 
 run: build
-	./$(BOT_NAME)
+	./bin/$(BOT_NAME)
 
 deploy: docker-push
 	@echo "Image pushed to $(IMAGE_NAME):$(TAG)"

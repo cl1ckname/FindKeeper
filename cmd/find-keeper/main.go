@@ -28,7 +28,9 @@ func main() {
 		log.Fatal("TELEGRAM_CHANNEL environment variable is required")
 	}
 
-	bot, err := bot.NewBot(token, channel)
+	proxyURL := os.Getenv("MTPROXY_URL")
+
+	bot, err := bot.NewBot(token, channel, proxyURL)
 	if err != nil {
 		log.Fatal(err)
 	}
