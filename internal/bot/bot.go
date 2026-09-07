@@ -2,10 +2,7 @@ package bot
 
 import (
 	"fmt"
-	"io"
 	"log"
-	"net/http"
-	"os"
 	"strconv"
 	"strings"
 
@@ -51,7 +48,6 @@ func (b *Bot) Start() {
 			}
 		case <-b.close:
 			return
-
 		}
 	}
 }
@@ -74,109 +70,34 @@ func (b *Bot) handleForwardedMessage(message *tgbotapi.Message) {
 
 func (b *Bot) handlePhoto(message *tgbotapi.Message) {
 	photo := message.Photo[len(message.Photo)-1]
-
-	file, err := b.api.GetFile(tgbotapi.FileConfig{FileID: photo.FileID})
-	if err != nil {
-		log.Printf("Error getting photo file: %v", err)
-		return
-	}
-
-	fileURL := fmt.Sprintf("https://api.telegram.org/file/bot%s/%s", b.api.Token, file.FilePath)
-
-	tempFile, err := b.downloadFile(fileURL)
-	if err != nil {
-		log.Printf("Error downloading photo: %v", err)
-		return
-	}
-	defer os.Remove(tempFile)
-
-	photoMsg := tgbotapi.NewPhoto(b.channel, tgbotapi.FilePath(tempFile))
-
-	photoMsg.Caption = message.Text
-	_, err = b.api.Send(photoMsg)
-	if err != nil {
+	msg := tgbotapi.NewPhoto(b.channel, tgbotapi.FileID(photo.FileID))
+	msg.Caption = message.Caption
+	if _, err := b.api.Send(msg); err != nil {
 		log.Printf("Error sending photo: %v", err)
 	}
 }
 
 func (b *Bot) handleVideo(message *tgbotapi.Message) {
-	video := message.Video
-
-	file, err := b.api.GetFile(tgbotapi.FileConfig{FileID: video.FileID})
-	if err != nil {
-		log.Printf("Error getting video file: %v", err)
-		return
-	}
-
-	fileURL := fmt.Sprintf("https://api.telegram.org/file/bot%s/%s", b.api.Token, file.FilePath)
-
-	tempFile, err := b.downloadFile(fileURL)
-	if err != nil {
-		log.Printf("Error downloading video: %v", err)
-		return
-	}
-	defer os.Remove(tempFile)
-
-	videoMsg := tgbotapi.NewVideo(b.channel, tgbotapi.FilePath(tempFile))
-
-	_, err = b.api.Send(videoMsg)
-	if err != nil {
+	msg := tgbotapi.NewVideo(b.channel, tgbotapi.FileID(message.Video.FileID))
+	if _, err := b.api.Send(msg); err != nil {
 		log.Printf("Error sending video: %v", err)
 	}
 }
 
 func (b *Bot) handleAnimation(message *tgbotapi.Message) {
-	animation := message.Animation
-
-	file, err := b.api.GetFile(tgbotapi.FileConfig{FileID: animation.FileID})
-	if err != nil {
-		log.Printf("Error getting animation file: %v", err)
-		return
-	}
-
-	fileURL := fmt.Sprintf("https://api.telegram.org/file/bot%s/%s", b.api.Token, file.FilePath)
-
-	tempFile, err := b.downloadFile(fileURL)
-	if err != nil {
-		log.Printf("Error downloading animation: %v", err)
-		return
-	}
-	defer os.Remove(tempFile)
-
-	animationMsg := tgbotapi.NewAnimation(b.channel, tgbotapi.FilePath(tempFile))
-
-	_, err = b.api.Send(animationMsg)
-	if err != nil {
+	msg := tgbotapi.NewAnimation(b.channel, tgbotapi.FileID(message.Animation.FileID))
+	if _, err := b.api.Send(msg); err != nil {
 		log.Printf("Error sending animation: %v", err)
 	}
 }
 
 func (b *Bot) handleDocument(message *tgbotapi.Message) {
 	doc := message.Document
-
 	if !b.isVideoDocument(doc.MimeType) {
 		return
 	}
-
-	file, err := b.api.GetFile(tgbotapi.FileConfig{FileID: doc.FileID})
-	if err != nil {
-		log.Printf("Error getting document file: %v", err)
-		return
-	}
-
-	fileURL := fmt.Sprintf("https://api.telegram.org/file/bot%s/%s", b.api.Token, file.FilePath)
-
-	tempFile, err := b.downloadFile(fileURL)
-	if err != nil {
-		log.Printf("Error downloading document: %v", err)
-		return
-	}
-	defer os.Remove(tempFile)
-
-	videoMsg := tgbotapi.NewVideo(b.channel, tgbotapi.FilePath(tempFile))
-
-	_, err = b.api.Send(videoMsg)
-	if err != nil {
+	msg := tgbotapi.NewVideo(b.channel, tgbotapi.FileID(doc.FileID))
+	if _, err := b.api.Send(msg); err != nil {
 		log.Printf("Error sending document as video: %v", err)
 	}
 }
@@ -189,27 +110,4 @@ func (b *Bot) isVideoDocument(mimeType string) bool {
 		}
 	}
 	return false
-}
-
-func (b *Bot) downloadFile(url string) (string, error) {
-	resp, err := http.Get(url)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-
-	tempFile, err := os.CreateTemp("", "telegram_media_*")
-	if err != nil {
-		return "", err
-	}
-
-	_, err = io.Copy(tempFile, resp.Body)
-	if err != nil {
-		tempFile.Close()
-		os.Remove(tempFile.Name())
-		return "", err
-	}
-
-	tempFile.Close()
-	return tempFile.Name(), nil
 }
